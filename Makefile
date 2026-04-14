@@ -1,6 +1,6 @@
 GOPROXY ?= https://goproxy.cn,direct
 GO_RUN = $(if $(GOPROXY),GOPROXY=$(GOPROXY),)
-GOLANGCI_LINT_VERSION ?= v2.8.0
+GOLANGCI_LINT_VERSION ?= v2.11.4
 
 .PHONY: dev test lint fmt build
 

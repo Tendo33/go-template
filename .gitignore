@@ -12,3 +12,4 @@ frontend/vite.config.d.ts
 frontend/vite.config.js
 logs/
 tmp/
+.history/

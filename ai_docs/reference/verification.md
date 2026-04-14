@@ -9,7 +9,7 @@
 ```bash
 go test ./...
 go build ./...
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 ```
 
 ## Frontend
@@ -24,7 +24,7 @@ pnpm --prefix frontend build
 ```bash
 go test ./...
 go build ./...
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 pnpm --prefix frontend test --run
 pnpm --prefix frontend build
 ```
@@ -38,7 +38,7 @@ GitHub Actions 当前以 `.github/workflows/ci.yml` 为准，等价门禁检查�
 ```bash
 go test ./...
 go build ./...
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 pnpm --prefix frontend install --frozen-lockfile
 pnpm --prefix frontend test --run
 pnpm --prefix frontend build

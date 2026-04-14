@@ -83,7 +83,7 @@ pnpm --prefix frontend dev
 ```bash
 go test ./...
 go build ./...
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 pnpm --prefix frontend test --run
 pnpm --prefix frontend build
 ```
@@ -243,7 +243,7 @@ curl http://localhost:8080/health
 ```bash
 go test ./...
 go build ./...
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 pnpm --prefix frontend test --run
 pnpm --prefix frontend build
 ```
