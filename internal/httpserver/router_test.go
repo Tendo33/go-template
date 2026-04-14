@@ -5,10 +5,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 func TestNewRouterServesHealthEndpoint(t *testing.T) {
-	router := NewRouter("go-template")
+	logger, _ := newObservedLogger()
+	router := NewRouter("go-template", logger)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	recorder := httptest.NewRecorder()
@@ -34,7 +39,8 @@ func TestNewRouterServesHealthEndpoint(t *testing.T) {
 }
 
 func TestNewRouterUsesProvidedServiceName(t *testing.T) {
-	router := NewRouter("acme-service")
+	logger, _ := newObservedLogger()
+	router := NewRouter("acme-service", logger)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	recorder := httptest.NewRecorder()
@@ -49,4 +55,37 @@ func TestNewRouterUsesProvidedServiceName(t *testing.T) {
 	if payload["service"] != "acme-service" {
 		t.Fatalf("expected service acme-service, got %q", payload["service"])
 	}
+}
+
+func TestNewRouterLogsCompletedRequests(t *testing.T) {
+	logger, logs := newObservedLogger()
+	router := NewRouter("go-template", logger)
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, req)
+
+	entries := logs.FilterMessage("request completed").All()
+	if len(entries) != 1 {
+		t.Fatalf("expected exactly one request log entry, got %d", len(entries))
+	}
+
+	fields := entries[0].ContextMap()
+	if fields["method"] != http.MethodGet {
+		t.Fatalf("expected method GET, got %#v", fields["method"])
+	}
+
+	if fields["path"] != "/health" {
+		t.Fatalf("expected path /health, got %#v", fields["path"])
+	}
+
+	if fields["status"] != int64(http.StatusOK) {
+		t.Fatalf("expected status 200, got %#v", fields["status"])
+	}
+}
+
+func newObservedLogger() (*zap.Logger, *observer.ObservedLogs) {
+	core, logs := observer.New(zapcore.DebugLevel)
+	return zap.New(core), logs
 }

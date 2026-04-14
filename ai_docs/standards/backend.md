@@ -9,7 +9,7 @@
 
 - Go 1.26
 - Gin
-- `slog`
+- `zap`
 - `golangci-lint`
 - Go 自带测试工具链
 

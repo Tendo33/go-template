@@ -12,7 +12,7 @@
 已经落地的模块：
 
 - `config`：环境变量配置加载
-- `observability`：基于 `slog` 的结构化日志初始化
+- `observability`：基于 `zap` 的结构化日志初始化
 - `httpserver`：Gin 路由、middleware 和 `http.Server` 组装
 - `service`：当前只有健康检查服务
 - `model`：健康检查响应结构

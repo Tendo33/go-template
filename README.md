@@ -44,13 +44,6 @@ cp .env.example .env
 cp frontend/.env.example frontend/.env.local
 ```
 
-PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-Copy-Item frontend/.env.example frontend/.env.local
-```
-
 当前默认环境变量包括：
 
 ```env
@@ -185,7 +178,7 @@ go-template/
 
 - Go 1.26
 - Gin
-- `slog`
+- `zap`
 - `golangci-lint`
 
 当前后端已经内置这些可直接复用的入口：

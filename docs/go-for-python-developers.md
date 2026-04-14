@@ -1020,7 +1020,7 @@ Go 的优势之一就是可以从很小的核心开始长起来。
 - 数据库：`database/sql` + `sqlc`
 - 测试：标准库 `testing`
 - 配置：环境变量
-- 日志：标准库 `log/slog`
+- 日志：`zap`
 - 质量：`go fmt`、`go vet`、`golangci-lint`
 
 ### 团队想更快起步

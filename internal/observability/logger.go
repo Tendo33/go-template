@@ -1,25 +1,46 @@
 package observability
 
 import (
-	"log/slog"
-	"os"
 	"strings"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func NewLogger(level string) *slog.Logger {
-	var slogLevel slog.Level
+func NewLogger(level string) *zap.Logger {
+	logLevel := zap.NewAtomicLevel()
 
 	switch strings.ToUpper(level) {
 	case "DEBUG":
-		slogLevel = slog.LevelDebug
+		logLevel.SetLevel(zap.DebugLevel)
 	case "WARN":
-		slogLevel = slog.LevelWarn
+		logLevel.SetLevel(zap.WarnLevel)
 	case "ERROR":
-		slogLevel = slog.LevelError
+		logLevel.SetLevel(zap.ErrorLevel)
 	default:
-		slogLevel = slog.LevelInfo
+		logLevel.SetLevel(zap.InfoLevel)
 	}
 
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slogLevel})
-	return slog.New(handler)
+	cfg := zap.Config{
+		Level:            logLevel,
+		Development:      false,
+		Encoding:         "json",
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:        "time",
+			LevelKey:       "level",
+			NameKey:        "logger",
+			CallerKey:      "caller",
+			MessageKey:     "msg",
+			StacktraceKey:  "stacktrace",
+			LineEnding:     zapcore.DefaultLineEnding,
+			EncodeLevel:    zapcore.LowercaseLevelEncoder,
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeDuration: zapcore.MillisDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		},
+	}
+
+	return zap.Must(cfg.Build())
 }
