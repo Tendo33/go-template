@@ -1,0 +1,14 @@
+.env
+.env.local
+.vite/
+bin/
+coverage/
+dist/
+frontend/dist/
+frontend/node_modules/
+frontend/.env.local
+frontend/*.tsbuildinfo
+frontend/vite.config.d.ts
+frontend/vite.config.js
+logs/
+tmp/
