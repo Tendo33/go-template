@@ -16,6 +16,10 @@ WORKDIR /app
 
 COPY --from=builder /server /server
 
+RUN addgroup -S app && adduser -S -G app app
+
+USER app
+
 EXPOSE 8080
 
 CMD ["/server"]

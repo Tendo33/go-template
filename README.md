@@ -54,6 +54,8 @@ SERVICE_NAME=go-template
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
+`APP_ENV=development|dev|local` 会启用更易读的彩色 console 日志；其他环境默认输出 JSON。Gin 中间件会自动透传或生成 `X-Request-ID`，并让访问日志与业务日志共享同一个 `request_id`。
+
 ### 5. 启动后端
 
 ```bash
@@ -79,9 +81,13 @@ go build ./...
 go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 run
 pnpm --prefix frontend test --run
 pnpm --prefix frontend build
+make docs-check
+docker build -t go-template:local .
 ```
 
 完整验证说明见 [ai_docs/reference/verification.md](ai_docs/reference/verification.md)。
+
+想在本地一次性跑到尽量贴近 CI 的校验，可以直接执行 `make ci-check`。
 
 ## Use This Template
 
@@ -113,19 +119,12 @@ sh ./scripts/rename_project.sh \
   --frontend-package-name @acme/my-new-project-frontend
 ```
 
-PowerShell:
-
-```powershell
-.\scripts\rename_project.ps1 -ProjectName my-new-project -ModuleName github.com/acme/my-new-project -FrontendPackageName @acme/my-new-project-frontend -DryRun
-.\scripts\rename_project.ps1 -ProjectName my-new-project -ModuleName github.com/acme/my-new-project -FrontendPackageName @acme/my-new-project-frontend
-```
-
 脚本会同步更新：
 
 - `go.mod` 中的模块名
 - 默认服务名
 - `frontend/package.json` 的 `name`
-- `README.md`、`ai_docs/`、前后端代码里的模板名引用
+- `README.md`、`ai_docs/`、前后端代码里的模板名称引用
 
 ### 3. 更新版本号
 
@@ -136,14 +135,17 @@ sh ./scripts/update_version.sh --version 0.2.0 --dry-run
 sh ./scripts/update_version.sh --version 0.2.0
 ```
 
-PowerShell:
+当前版本同步脚本会同时更新根目录 `VERSION` 和 `frontend/package.json`，用 `VERSION` 作为模板版本的单一事实来源。
 
-```powershell
-.\scripts\update_version.ps1 -Version 0.2.0 -DryRun
-.\scripts\update_version.ps1 -Version 0.2.0
+### 4. 初始化后立刻做一次完整校验
+
+建议在完成重命名、配置和版本号更新后，立刻执行一次用来检查模板是否被安全初始化的验证：
+
+```bash
+make ci-check
 ```
 
-当前版本同步脚本会同时更新根目录 `VERSION` 和 `frontend/package.json`，用 `VERSION` 作为模板版本的单一事实来源。
+如果只是局部改动，则按 [ai_docs/reference/verification.md](ai_docs/reference/verification.md) 里的任务类型选择对应检查。
 
 ## Project Structure
 
@@ -180,6 +182,16 @@ go-template/
 - Gin
 - `zap`
 - `golangci-lint`
+
+当前日志与请求链路默认约定：
+
+- 开发环境使用彩色 console encoder，方便本地排查
+- 非开发环境使用 JSON 结构化日志，方便容器和日志平台采集
+- HTTP 请求默认透传或生成 `X-Request-ID`
+- 请求级 logger 通过 `context.Context` 传递
+- handler/service 可通过 `observability.FromContext(...)` 读取请求级 logger
+- `trace_id` / `span_id` 已预留 context 字段位，后续可在不改业务调用方式的前提下接入 OTel
+- Docker 构建上下文通过 `.dockerignore` 收紧，避免把前端产物和本地缓存带进镜像构建
 
 当前后端已经内置这些可直接复用的入口：
 
@@ -222,8 +234,7 @@ curl http://localhost:8080/health
 
 - `rename_project.sh`：默认的 macOS / Linux 项目重命名脚本
 - `update_version.sh`：默认的 macOS / Linux 版本同步脚本
-- `rename_project.ps1`：PowerShell 兼容版本的重命名脚本
-- `update_version.ps1`：PowerShell 兼容版本的版本同步脚本
+- 当前仓库默认只提供 `.sh` 模板维护脚本
 
 脚本现状与使用场景见 [ai_docs/current/scripts.md](ai_docs/current/scripts.md)。
 
@@ -260,7 +271,7 @@ Windows 下如果没有 `make`，请直接使用文档中的原始命令；`Make
 发版时建议：
 
 1. 运行完整验证
-2. 用 `scripts/update_version.sh` 或 `scripts/update_version.ps1` 更新版本号，并确认 `VERSION` 与 `frontend/package.json` 已同步
+2. 用 `scripts/update_version.sh` 更新版本号，并确认 `VERSION` 与 `frontend/package.json` 已同步
 3. 手工创建并推送 tag
 4. 按项目需要在 GitHub 上补 release 说明
 

@@ -13,6 +13,15 @@
 - `golangci-lint`
 - Go 自带测试工具链
 
+日志与请求链路默认约定：
+
+- 开发环境（`development`、`dev`、`local`）优先可读性，使用彩色 console encoder
+- 非开发环境优先机器采集，使用 JSON 结构化日志
+- HTTP 请求默认透传或生成 `X-Request-ID`
+- 请求链路日志通过 `context.Context` 传递，不把请求态 logger 放进全局变量或 service struct
+- handler/service 读取请求级 logger 时统一使用 `observability.FromContext(...)`
+- `trace_id` / `span_id` 可作为后续 OpenTelemetry 接入的 context 字段位，模板阶段不直接引入 OTel SDK
+
 只有在项目确实需要时，再引入数据库、ORM、Swagger、gRPC 或消息队列。
 
 ## Design rules
@@ -32,6 +41,7 @@
 ## Configuration and safety
 
 - 配置统一从环境变量读取
+- 服务启动前必须显式校验关键配置，至少覆盖端口、服务名和日志级别这类基础项
 - secrets 只从环境变量或受控配置源读取
 - 日志不打印 token、密码或敏感个人数据
 - 外部输入必须显式校验

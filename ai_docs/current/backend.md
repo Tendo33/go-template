@@ -11,8 +11,8 @@
 
 已经落地的模块：
 
-- `config`：环境变量配置加载
-- `observability`：基于 `zap` 的结构化日志初始化
+- `config`：环境变量配置加载与最小校验
+- `observability`：基于 `zap` 的结构化日志初始化、环境感知 encoder、request logger context helper 和 trace/span 预留 helper
 - `httpserver`：Gin 路由、middleware 和 `http.Server` 组装
 - `service`：当前只有健康检查服务
 - `model`：健康检查响应结构
@@ -21,13 +21,20 @@
 
 - 当前配置定义在 `internal/config`
 - 基线字段只有 `APP_ENV`、`PORT`、`LOG_LEVEL`、`SERVICE_NAME`
+- `config.Load()` 会裁掉环境变量首尾空白
+- 服务启动前会执行 `cfg.Validate()`
+- 当前最小配置校验覆盖 `PORT`、`SERVICE_NAME` 和 `LOG_LEVEL`
 - 默认服务名是 `go-template`
+- `APP_ENV=development|dev|local` 时使用彩色 console 日志，其它环境默认输出 JSON
 - 当前没有引入配置文件解析或多层配置来源
 
 ## HTTP and public behavior
 
-- 当前服务入口为 `cmd/server/main.go`
+- 当前服务入口在 `cmd/server/main.go`
 - 当前只暴露一个 HTTP 接口：`GET /health`
+- Gin middleware 会自动透传或生成 `X-Request-ID`，并把带 `request_id` 的 logger 注入 `context.Context`
+- handler 和 service 已有最小示例，通过 `observability.FromContext(...)` 获取请求级 logger
+- `trace_id` / `span_id` 也已预留 context 字段位，后续可在不改业务调用方式的前提下接入 OTel
 - 成功时返回 `200` 和 JSON：
 
 ```json

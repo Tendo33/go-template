@@ -14,6 +14,7 @@
 - Gin 后端基础设施：配置、日志、HTTP 服务装配与健康检查接口
 - React + Vite 前端 starter
 - 一组模板维护脚本
+- Dockerfile 与 `.dockerignore` 组成的基础容器化入口
 - 根目录 AI 入口文件：`AGENTS.md` 和 `CLAUDE.md`
 - 一套精简后的 `ai_docs/` 文档系统
 

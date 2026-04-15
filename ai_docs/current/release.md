@@ -15,7 +15,14 @@
 - 创建并推送 tag
 - 视项目需要在 GitHub 上补 release 说明
 
-默认开发环境按 macOS / Linux 组织，因此版本更新脚本优先使用 `.sh`；PowerShell 版本仅保留兼容入口。
+当前 CI 会校验四类门禁：
+
+- backend 测试、构建与 lint
+- frontend 安装、测试与构建
+- 文档链接检查
+- Docker 镜像构建
+
+默认开发环境按 macOS / Linux 组织，因此版本更新脚本当前只提供 `.sh` 入口。
 
 ## Release notes
 

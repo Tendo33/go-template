@@ -11,8 +11,13 @@
 
 - `rename_project.sh`：默认的 macOS / Linux 项目重命名脚本
 - `update_version.sh`：默认的 macOS / Linux 版本同步脚本
-- `rename_project.ps1`：PowerShell 兼容版本的项目重命名脚本
-- `update_version.ps1`：PowerShell 兼容版本的版本同步脚本
+
+仓库当前还提供这些常用 `Makefile` 校验入口：
+
+- `make fullstack`
+- `make docs-check`
+- `make docker-build`
+- `make ci-check`
 
 ## When to use which script
 
@@ -20,7 +25,7 @@
 
 - 新建仓库后第一时间改模板名称时优先用 `rename_project.sh`
 - 它会更新 `go.mod`、默认服务名、前端包名以及文档和源码中的模板名称引用
-- 当前 `.sh` 脚本面向 macOS / Linux，`.ps1` 脚本用于 PowerShell 兼容环境
+- 当前维护脚本只提供 `.sh` 入口，默认面向 macOS / Linux 或兼容的 shell 环境
 - 两者都使用参数式调用，不提供交互式界面
 - Unix 环境默认用 `sh ./scripts/rename_project.sh ...` 调用，不依赖文件可执行位
 
@@ -30,6 +35,13 @@
 - 当前脚本会同步更新根目录 `VERSION` 与 `frontend/package.json`
 - `VERSION` 是模板版本的单一事实来源，前端包版本跟随它同步
 - Unix 环境默认用 `sh ./scripts/update_version.sh ...` 调用
+
+### Verification shortcuts
+
+- 想跑代码级完整验证时优先用 `make fullstack`
+- 改了文档时额外跑 `make docs-check`
+- 改了 Dockerfile 或镜像上下文时额外跑 `make docker-build`
+- 想本地尽量贴近 CI 时直接跑 `make ci-check`
 
 ## Verification
 
