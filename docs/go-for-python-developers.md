@@ -1423,7 +1423,238 @@ go test ./...
 
 也就是说，这个仓库已经替你做完了“最小服务骨架”。
 
-### 20.2 最适合你的第一个练习
+如果你是 Python 开发者，先不要急着把它理解成“一个完整框架”。  
+更准确地说，它是一个已经把后端启动、路由、日志、前端联调和工程化骨架都搭好的最小全栈模板。
+
+先建立一组最重要的对应关系：
+
+- `cmd/server/main.go`：相当于应用启动入口，可以类比 `main.py`、`manage.py` 或 `uvicorn app:app` 背后的启动脚本
+- `internal/config`：相当于配置加载层，可以类比 `settings.py` 或 `BaseSettings`
+- `internal/httpserver`：相当于路由注册、middleware 和 HTTP server 装配层
+- `internal/service`：相当于你在 Python 里会抽出来的业务逻辑层
+- `internal/model`：相当于响应 schema 或序列化结构
+- `frontend/src/lib/api.ts`：相当于前端侧统一的请求封装
+- `frontend/src/app/App.tsx`：当前前端页面入口，负责调用后端接口并展示结果
+
+### 20.2 先看服务是怎么启动的
+
+入口在 `cmd/server/main.go`。它做的事情只有几件，而且顺序很固定：
+
+1. 调用 `config.Load()` 读取环境变量
+2. 调用 `cfg.Validate()` 做启动前校验
+3. 调用 `observability.NewLogger(cfg)` 创建日志器
+4. 调用 `httpserver.NewServer(cfg, logger)` 组装 Gin 服务
+5. 启动 HTTP server，并监听退出信号做优雅关闭
+
+如果你带着 Python 经验来理解，可以把它看成：
+
+- `Load()` 是把当前进程里的环境变量整理成运行配置
+- `Validate()` 是在服务启动前尽早失败，而不是等请求进来才报错
+- `NewServer(...)` 是把“应用对象”真正创建出来
+- `signal.Notify(...)` + `Shutdown(...)` 对应的是生产环境里优雅退出，而不是直接 `Ctrl+C` 硬停
+
+### 20.3 再看一个请求是怎么走的
+
+这个模板当前只有一个公开接口：`GET /health`。它的调用链很短，正适合拿来建立感觉：
+
+1. `cmd/server/main.go` 调用 `httpserver.NewServer(...)`
+2. `internal/httpserver/server.go` 创建 `http.Server`
+3. `internal/httpserver/router.go` 注册 `GET /health`
+4. `internal/httpserver/router.go` 先创建 `healthService := service.NewHealthService(serviceName)`
+5. handler 调用 `healthService.Status(...)`
+6. `internal/service/health_service.go` 返回 `model.HealthResponse`，再由 Gin 序列化成 JSON
+
+如果你更习惯 Python，可以把它粗略理解成下面这个映射：
+
+```python
+app = FastAPI()
+service = HealthService(service_name)
+
+@app.get("/health")
+def health():
+    return service.status()
+```
+
+而在这个模板里，等价逻辑被拆成了更显式的 Go 版本：
+
+- 路由注册在 `internal/httpserver/router.go`
+- 业务逻辑在 `internal/service/health_service.go`
+- 返回结构在 `internal/model/health.go`
+
+这种拆法一开始会比 Python 多几步，但好处是边界很清楚：以后接口变多时，不容易把 handler、日志、配置和业务逻辑揉成一团。
+
+### 20.4 这个模板里最值得你先建立手感的 Go 概念
+
+#### `struct` 先当成“明确字段的数据对象”
+
+例如当前的 `internal/model/health.go`：
+
+```go
+type HealthResponse struct {
+	Status  string `json:"status"`
+	Service string `json:"service"`
+}
+```
+
+你可以先把它理解成：
+
+- 一个轻量的数据结构
+- 同时承担“字段定义”和“JSON 序列化声明”
+- 用 struct tag 告诉 JSON 输出时字段名是什么
+
+如果类比 Python，它有点像：
+
+```python
+class HealthResponse(BaseModel):
+    status: str
+    service: str
+```
+
+#### 方法不是只能挂在 class 上
+
+`internal/service/health_service.go` 里：
+
+```go
+type HealthService struct {
+	serviceName string
+}
+
+func (s HealthService) Status(ctx context.Context) model.HealthResponse {
+	...
+}
+```
+
+对 Python 开发者来说，可以先把这理解成“把函数挂在某个对象上”。Go 没有 class 体系，但它有 receiver，所以仍然可以表达“这个行为属于这个类型”。
+
+#### `error` 是显式返回，不是默认抛异常
+
+比如 `cfg.Validate()` 返回 `error`，`main()` 里会显式判断：
+
+```go
+if err := cfg.Validate(); err != nil {
+	log.Fatalf("invalid configuration: %v", err)
+}
+```
+
+这和 Python 最大的手感差异之一是：
+
+- Python 经常是“先调用，再 `try/except`”
+- Go 更常见是“调用后立刻检查 `err`”
+
+#### `context.Context` 先把它当成“请求作用域的数据盒子”
+
+当前模板把 request logger 和 `request_id` 都放进 `context.Context` 里，后续 handler 和 service 都从 context 里取。
+
+你可以先把它理解成：
+
+- 它不是业务数据本身
+- 它是请求生命周期里的附加信息载体
+- 常见用途是日志、trace、超时、取消信号
+
+#### 大写开头代表“可导出”
+
+例如：
+
+- `Config`、`Load`、`Validate` 是可跨 package 使用的
+- `getEnv` 是小写，只在当前 package 内部使用
+
+这就是 Go 很直接的可见性规则，不需要额外写 `public/private`。
+
+### 20.5 在这个模板里，第一次加接口应该怎么做
+
+不要一上来就想着把 Python 项目的整套写法原封不动搬过来。更稳的方式是沿着模板现在已有的分层，先照着 `/health` 加一个最小接口。
+
+假设你想加一个 `GET /hello`，返回：
+
+```json
+{
+  "message": "hello",
+  "service": "go-template"
+}
+```
+
+建议按这个顺序做：
+
+1. 先在 `internal/model` 增加返回结构，明确 JSON 长什么样
+2. 再在 `internal/service` 增加业务方法，负责拼出响应数据
+3. 最后在 `internal/httpserver/router.go` 注册路由并返回 JSON
+4. 改完后跑 `go test ./...`、`go build ./...`
+
+对应到 Python 心智，大致是：
+
+- `model` 层回答“返回体长什么样”
+- `service` 层回答“业务逻辑怎么算”
+- `router` 层回答“哪个 URL 调哪个逻辑”
+
+如果你想直接照着这个模板动手，可以先写成下面这样。
+
+先加返回结构，例如放到 `internal/model/hello.go`：
+
+```go
+package model
+
+type HelloResponse struct {
+	Message string `json:"message"`
+	Service string `json:"service"`
+}
+```
+
+再加 service，例如放到 `internal/service/hello_service.go`：
+
+```go
+package service
+
+import (
+	"context"
+
+	"github.com/Tendo33/go-template/internal/model"
+)
+
+type HelloService struct {
+	serviceName string
+}
+
+func NewHelloService(serviceName string) HelloService {
+	return HelloService{serviceName: serviceName}
+}
+
+func (s HelloService) Hello(_ context.Context) model.HelloResponse {
+	return model.HelloResponse{
+		Message: "hello",
+		Service: s.serviceName,
+	}
+}
+```
+
+最后在 `internal/httpserver/router.go` 接进去：
+
+```go
+helloService := service.NewHelloService(serviceName)
+
+router.GET("/hello", func(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, helloService.Hello(ctx.Request.Context()))
+})
+```
+
+如果你还想把它接到前端，再做两步：
+
+1. 在 `frontend/src/lib/api.ts` 里新增 `fetchHello()`
+2. 在 `frontend/src/app/App.tsx` 里像现在请求 `/health` 一样把 `/hello` 的结果显示出来
+
+这样你就会完整走一遍这个模板最核心的开发路径：后端 model、后端 service、后端 router、前端 API 封装、前端页面展示。
+
+### 20.6 前端为什么现在只有一个很小的页面
+
+`frontend/src/app/App.tsx` 当前只做一件事：页面加载后请求 `/health`，把结果显示出来。它的价值不是 UI，而是让你确认这几个环节已经接通：
+
+- 前端能启动
+- 前端能请求后端
+- 后端接口能返回 JSON
+- 本地代理或 `VITE_API_BASE_URL` 配置是通的
+
+对于 Python 开发者，这一点特别重要，因为很多人第一次转 Go 时会把注意力全部放在后端语法上，结果忽略了“这个模板其实已经把一条最小全栈链路搭好了”。
+
+### 20.7 最适合你的第一个练习
 
 不要一上来改一堆架构。  
 最好的练习是：**在当前模板上新增一个用户列表接口**。
@@ -1436,7 +1667,7 @@ go test ./...
 
 这是个非常好的第一步，因为它只新增一个读接口，不涉及数据库、鉴权和复杂输入校验。
 
-### 20.3 你可以按这个顺序扩展
+### 20.8 你可以按这个顺序扩展
 
 #### 第一步：新增响应模型
 
@@ -1496,7 +1727,7 @@ router.GET("/users", func(ctx *gin.Context) {
 
 如果你还不熟悉测试，可以先只做“状态码 + 响应包含关键字段”的断言。
 
-### 20.4 为什么我建议你先做“只读列表接口”
+### 20.9 为什么我建议你先做“只读列表接口”
 
 因为这一步刚好能练到：
 
@@ -1514,7 +1745,7 @@ router.GET("/users", func(ctx *gin.Context) {
 - 事务
 - 数据库驱动
 
-### 20.5 第二个练习再做什么
+### 20.10 第二个练习再做什么
 
 当 `GET /users` 完成后，你的下一步建议是二选一：
 
@@ -1528,7 +1759,28 @@ router.GET("/users", func(ctx *gin.Context) {
 3. `database/sql`
 4. 再考虑 ORM 或代码生成器
 
-### 20.6 这部分实战的真正目的
+### 20.11 什么时候该改哪里
+
+- 想加环境变量：改 `internal/config`
+- 想加新接口：先看 `internal/httpserver/router.go`
+- 想加接口背后的业务逻辑：改 `internal/service`
+- 想改返回 JSON 结构：改 `internal/model`
+- 想看启动流程：看 `cmd/server/main.go`
+- 想看前端怎么调接口：看 `frontend/src/lib/api.ts` 和 `frontend/src/app/App.tsx`
+
+### 20.12 最适合 Python 开发者的阅读路线
+
+如果你现在还不熟 Go，不建议从语法书开始啃这个模板。更高效的方式是：
+
+1. 先跑起来：`go run ./cmd/server` 和 `pnpm --prefix frontend dev`
+2. 用浏览器或 `curl` 看 `GET /health` 的结果
+3. 按“入口 -> 路由 -> service -> model”的顺序读一遍代码
+4. 自己加一个最小新接口
+5. 最后再回头总结你碰到的 Go 语法点，比如 `struct`、receiver、`context.Context`、`error`
+
+这样你学到的就不是抽象的“Go 语法”，而是“在这个模板里我该怎么落代码”。
+
+### 20.13 这部分实战的真正目的
 
 不是“把模板改复杂”，而是让你学会一个很重要的迁移能力：
 
