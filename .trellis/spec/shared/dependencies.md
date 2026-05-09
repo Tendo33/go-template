@@ -10,7 +10,7 @@
 | Request IDs | `gin-contrib/requestid` |
 | Go quality | Go test, Go build, golangci-lint |
 | Frontend package manager | pnpm |
-| Frontend runtime | React, TypeScript, Vite |
+| Frontend runtime | React, TypeScript, Vite, Tailwind CSS 4 |
 | Frontend testing | Vitest, Testing Library |
 
 ## Rules

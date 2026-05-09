@@ -62,6 +62,7 @@ Thinking and handoff guides:
 - React
 - TypeScript
 - Vite
+- Tailwind CSS 4
 - Vitest
 - `pnpm`
 - Dockerfile and `.dockerignore`

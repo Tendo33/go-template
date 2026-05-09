@@ -31,7 +31,7 @@ npx getdesign@latest add linear.app
 ## Implementation Rules
 
 - Read `DESIGN.md` before editing UI files.
-- Translate the design direction into the existing Vite/Tailwind/component
+- Translate the design direction into the existing Vite/Tailwind CSS 4/component
   structure.
 - Do not blindly copy a brand; adapt the mood, spacing, typography, and states
   to the target project.

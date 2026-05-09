@@ -4,11 +4,12 @@ Read this before frontend work in go-template.
 
 ## Current Frontend
 
-`frontend/` is a small React + TypeScript + Vite starter:
+`frontend/` is a small React + TypeScript + Vite + Tailwind CSS 4 starter:
 
 - A minimal page entry.
 - An API helper that calls backend `GET /health`.
 - Vitest + Testing Library test baseline.
+- Tailwind CSS 4 through the Vite plugin.
 - Vite dev proxy for `/health`.
 
 ## Current Structure

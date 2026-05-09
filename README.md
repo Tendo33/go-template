@@ -12,7 +12,7 @@
 ## 你会直接得到什么
 
 - 后端基线：Go、Gin、`zap`、环境变量配置、健康检查接口、结构化日志
-- 前端基线：React 19、TypeScript 6、Vite 8、Vitest
+- 前端基线：React 19、TypeScript 6、Vite 8、Tailwind CSS 4、Vitest
 - 工程化基线：`golangci-lint`、GitHub Actions、Dockerfile、`.dockerignore`
 - 模板维护入口：项目重命名、版本号同步
 - 协作文档基线：`.trellis/spec/` 作为当前实现和工程约定的事实源
@@ -215,6 +215,7 @@ docker build -t go-template:local .
 - React 19
 - TypeScript 6
 - Vite 8
+- Tailwind CSS 4
 - Vitest + Testing Library
 
 当前 starter 刻意保持为一个很小的单页应用，只负责：
