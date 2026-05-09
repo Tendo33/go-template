@@ -16,11 +16,11 @@
 - Modify: `Makefile`
 - Modify: `.github/workflows/ci.yml`
 - Modify: `README.md`
-- Modify: `ai_docs/reference/verification.md`
+- Modify: `.trellis/spec/shared/verification.md`
 
 **Step 1: 先确认当前校验命令仍在使用 `@latest`**
 
-Run: `Select-String -Path README.md,Makefile,.github/workflows/ci.yml,ai_docs/reference/verification.md -Pattern '@latest'`
+Run: `Select-String -Path README.md,Makefile,.github/workflows/ci.yml,.trellis/spec/shared/verification.md -Pattern '@latest'`
 Expected: 能看到 `golangci-lint@latest`
 
 **Step 2: 写最小实现**
@@ -64,8 +64,8 @@ Expected: `True`
 - Modify: `scripts/update_version.sh`
 - Modify: `scripts/update_version.ps1`
 - Modify: `README.md`
-- Modify: `ai_docs/current/scripts.md`
-- Modify: `ai_docs/current/release.md`
+- Modify: `.trellis/spec/shared/index.md`
+- Modify: `.trellis/spec/shared/verification.md`
 
 **Step 1: 先确认当前 dry-run 只会更新前端版本**
 
