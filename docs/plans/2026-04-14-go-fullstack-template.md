@@ -135,11 +135,6 @@ git commit -m "feat: add frontend starter"
 
 **Files:**
 - Modify: `README.md`
-- Create: `.trellis/spec/README.md`
-- Create: `.trellis/spec/shared/index.md`
-- Create: `.trellis/spec/backend/index.md`
-- Create: `.trellis/spec/frontend/index.md`
-- Create: `.trellis/spec/shared/verification.md`
 
 **Step 1: Write the failing test**
 
@@ -152,7 +147,6 @@ Expected: 当前 README 无法指导完整初始化与验证。
 
 **Step 3: Write minimal implementation**
 
-补齐 README 与最小版 `.trellis/spec`，明确项目结构、启动方式与验证命令。
 
 **Step 4: Run test to verify it passes**
 

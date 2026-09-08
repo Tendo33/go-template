@@ -15,7 +15,6 @@
 - 前端基线：React 19、TypeScript 6、Vite 8、Tailwind CSS 4、Vitest
 - 工程化基线：`golangci-lint`、GitHub Actions、Dockerfile、`.dockerignore`
 - 模板维护入口：项目重命名、版本号同步
-- 协作文档基线：`.trellis/spec/` 作为当前实现和工程约定的事实源
 
 ## Quick Start
 
@@ -125,7 +124,6 @@ sh ./scripts/rename_project.sh \
 - `go.mod` 里的模块名
 - 默认服务名
 - `frontend/package.json` 的 `name`
-- `README.md`、`.trellis/spec/`、前后端代码里的模板名称引用
 
 ### 3. 更新版本号
 
@@ -142,7 +140,6 @@ sh ./scripts/update_version.sh --version 0.2.0
 make ci-check
 ```
 
-如果只是局部改动，则按 [.trellis/spec/shared/verification.md](.trellis/spec/shared/verification.md) 里的任务类型选择对应检查。
 
 ## 日常开发常用命令
 
@@ -176,7 +173,6 @@ make ci-check
 docker build -t go-template:local .
 ```
 
-验证命令的唯一详细来源是 [.trellis/spec/shared/verification.md](.trellis/spec/shared/verification.md)。
 
 ## 后端默认约定
 
@@ -241,7 +237,6 @@ go-template/
 │   ├── src/styles/               # 全局样式
 │   └── src/test/                 # 前端测试初始化
 ├── scripts/                      # 模板维护脚本
-├── .trellis/spec/                # AI / 协作文档与工程规则
 ├── .github/workflows/            # CI workflow
 ├── docs/plans/                   # 设计与实施计划
 ├── Makefile
@@ -249,7 +244,6 @@ go-template/
 └── README.md
 ```
 
-更细的结构说明见 [.trellis/spec/shared/index.md](.trellis/spec/shared/index.md)。
 
 ## 脚本与文档入口
 
@@ -262,15 +256,9 @@ go-template/
 
 协作文档入口：
 
-1. [.trellis/spec/README.md](.trellis/spec/README.md)
-2. [.trellis/spec/shared/index.md](.trellis/spec/shared/index.md)
-3. [.trellis/spec/shared/verification.md](.trellis/spec/shared/verification.md)
 
 相关说明：
 
-- 脚本现状见 [.trellis/spec/shared/index.md](.trellis/spec/shared/index.md)
-- 后端现状见 [.trellis/spec/backend/index.md](.trellis/spec/backend/index.md)
-- 发版与验证见 [.trellis/spec/shared/verification.md](.trellis/spec/shared/verification.md)
 
 ## Release
 
