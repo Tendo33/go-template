@@ -238,7 +238,7 @@ go-template/
 │   └── src/test/                 # 前端测试初始化
 ├── scripts/                      # 模板维护脚本
 ├── .github/workflows/            # CI workflow
-├── docs/plans/                   # 设计与实施计划
+├── docs/                         # 使用指南（go-for-python-developers.md）
 ├── Makefile
 ├── go.mod
 └── README.md
